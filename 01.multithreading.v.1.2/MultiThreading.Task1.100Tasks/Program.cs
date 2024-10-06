@@ -2,8 +2,8 @@
  * 1.	Write a program, which creates an array of 100 Tasks, runs them and waits all of them are not finished.
  * Each Task should iterate from 1 to 1000 and print into the console the following string:
  * “Task #0 – {iteration number}”.
- */
-using System;
+ */using System;
+using System.Threading.Tasks;
 
 namespace MultiThreading.Task1._100Tasks
 {
@@ -19,7 +19,7 @@ namespace MultiThreading.Task1._100Tasks
             Console.WriteLine("Each Task should iterate from 1 to 1000 and print into the console the following string:");
             Console.WriteLine("“Task #0 – {iteration number}”.");
             Console.WriteLine();
-            
+
             HundredTasks();
 
             Console.ReadLine();
@@ -27,7 +27,24 @@ namespace MultiThreading.Task1._100Tasks
 
         static void HundredTasks()
         {
-            // feel free to add your code here
+            // Create an array to hold the tasks
+            Task[] tasks = new Task[TaskAmount];
+
+            // Initialize and start each task
+            for (int i = 0; i < TaskAmount; i++)
+            {
+                int taskNumber = i; // Capture the task number
+                tasks[i] = Task.Run(() =>
+                {
+                    for (int j = 1; j <= MaxIterationsCount; j++)
+                    {
+                        Output(taskNumber, j);
+                    }
+                });
+            }
+
+            // Wait for all tasks to complete
+            Task.WaitAll(tasks);
         }
 
         static void Output(int taskNumber, int iterationNumber)
