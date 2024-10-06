@@ -10,6 +10,7 @@
  */
 
 using System;
+using System.Threading;
 
 namespace MultiThreading.Task4.Threads.Join
 {
@@ -26,9 +27,47 @@ namespace MultiThreading.Task4.Threads.Join
 
             Console.WriteLine();
 
-            // feel free to add your code
+            // Part A
+            Console.WriteLine("Starting Part A: Thread class with Join");
+            CreateThreads(10, 10);
+
+            // Part B
+            Console.WriteLine("\nStarting Part B: ThreadPool class with Semaphore");
+            CreateThreadsWithThreadPool(10, 10);
 
             Console.ReadLine();
+        }
+
+        // Part A: Using Thread class
+        static void CreateThreads(int maxThreads, int state)
+        {
+            if (maxThreads <= 0) return;
+
+            Thread thread = new Thread(() =>
+            {
+                Console.WriteLine($"Thread with state: {state}");
+                CreateThreads(maxThreads - 1, state - 1);
+            });
+
+            thread.Start();
+            thread.Join(); // Wait for the thread to finish
+        }
+
+        // Part B: Using ThreadPool and Semaphore
+        static Semaphore semaphore = new Semaphore(0, 10);
+
+        static void CreateThreadsWithThreadPool(int maxThreads, int state)
+        {
+            if (maxThreads <= 0) return;
+
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                Console.WriteLine($"ThreadPool thread with state: {state}");
+                CreateThreadsWithThreadPool(maxThreads - 1, state - 1);
+                semaphore.Release();
+            });
+
+            semaphore.WaitOne();
         }
     }
 }
