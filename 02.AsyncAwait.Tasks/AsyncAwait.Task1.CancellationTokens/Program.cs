@@ -55,7 +55,7 @@ internal class Program
 
         try
         {
-            var sum = await Task.Run(() => Calculator.CalculateAsync(n, _cts.Token), _cts.Token);
+            var sum = await Task.Run(() => Calculator.CalculateAsync(n, _cts.Token));
             Console.WriteLine($"Sum for {n} = {sum}.");
         }
         catch (OperationCanceledException)
