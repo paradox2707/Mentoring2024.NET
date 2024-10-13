@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System;
 
+namespace AsyncAwait.Task2.CodeReviewChallenge.Controllers;
+
 public class HomeController : Controller
 {
     private readonly IAssistant _assistant;

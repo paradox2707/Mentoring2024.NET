@@ -4,6 +4,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System;
 
+namespace AsyncAwait.Task2.CodeReviewChallenge.Models.Support;
+
 public class ManualAssistant : IAssistant
 {
     private readonly ISupportService _supportService;
