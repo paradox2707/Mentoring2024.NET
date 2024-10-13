@@ -8,15 +8,15 @@
 */
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AsyncAwait.Task1.CancellationTokens;
 
 internal class Program
 {
-    /// <summary>
-    /// The Main method should not be changed at all.
-    /// </summary>
-    /// <param name="args"></param>
+    private static CancellationTokenSource _cts = new CancellationTokenSource();
+
     private static void Main(string[] args)
     {
         Console.WriteLine("Mentoring program L2. Async/await.V1. Task 1");
@@ -25,7 +25,6 @@ internal class Program
         Console.WriteLine();
 
         Console.WriteLine("Enter N: ");
-
         var input = Console.ReadLine();
         while (input.Trim().ToUpper() != "Q")
         {
@@ -42,20 +41,33 @@ internal class Program
             input = Console.ReadLine();
         }
 
+        _cts.Cancel(); // Cancel any ongoing task on exit
         Console.WriteLine("Press any key to continue");
         Console.ReadLine();
     }
 
-    private static void CalculateSum(int n)
+    private static async void CalculateSum(int n)
     {
-        // todo: make calculation asynchronous
-        var sum = Calculator.Calculate(n);
-        Console.WriteLine($"Sum for {n} = {sum}.");
-        Console.WriteLine();
-        Console.WriteLine("Enter N: ");
-        // todo: add code to process cancellation and uncomment this line    
-        // Console.WriteLine($"Sum for {n} cancelled...");
+        _cts.Cancel();
+        _cts = new CancellationTokenSource();
 
         Console.WriteLine($"The task for {n} started... Enter N to cancel the request:");
+
+        try
+        {
+            var sum = await Task.Run(() => Calculator.CalculateAsync(n, _cts.Token));
+            Console.WriteLine($"Sum for {n} = {sum}.");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine($"Sum for {n} cancelled...");
+            return;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+        }
+
+        Console.WriteLine("Enter N: ");
     }
 }
