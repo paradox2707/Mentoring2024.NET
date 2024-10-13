@@ -1,17 +1,15 @@
-﻿using System;
+﻿using AsyncAwait.Task2.CodeReviewChallenge.Models.Support;
+using AsyncAwait.Task2.CodeReviewChallenge.Models;
+using AsyncAwait.Task2.CodeReviewChallenge.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using AsyncAwait.Task2.CodeReviewChallenge.Models;
-using AsyncAwait.Task2.CodeReviewChallenge.Models.Support;
-using AsyncAwait.Task2.CodeReviewChallenge.Services;
-using Microsoft.AspNetCore.Mvc;
-
-namespace AsyncAwait.Task2.CodeReviewChallenge.Controllers;
+using System;
 
 public class HomeController : Controller
 {
     private readonly IAssistant _assistant;
-
     private readonly IPrivacyDataService _privacyDataService;
 
     public HomeController(IAssistant assistant, IPrivacyDataService privacyDataService)
@@ -25,9 +23,9 @@ public class HomeController : Controller
         return View();
     }
 
-    public ActionResult Privacy()
+    public async Task<ActionResult> Privacy()
     {
-        ViewBag.Message = _privacyDataService.GetPrivacyDataAsync().Result;
+        ViewBag.Message = await _privacyDataService.GetPrivacyDataAsync().ConfigureAwait(false);
         return View();
     }
 
@@ -40,6 +38,6 @@ public class HomeController : Controller
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
-        return View(new ErrorViewModel {RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier});
+        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }
