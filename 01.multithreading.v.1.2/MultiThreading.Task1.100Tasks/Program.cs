@@ -1,8 +1,11 @@
 ﻿/*
- * 1.	Write a program, which creates an array of 100 Tasks, runs them and waits all of them are not finished.
+ * 1.	Write a program, which creates an array of 100 Tasks, runs them and waits all of them are finished.
  * Each Task should iterate from 1 to 1000 and print into the console the following string:
  * “Task #0 – {iteration number}”.
- */using System;
+ */
+using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MultiThreading.Task1._100Tasks
@@ -15,26 +18,49 @@ namespace MultiThreading.Task1._100Tasks
         static void Main(string[] args)
         {
             Console.WriteLine(".Net Mentoring Program. Multi threading V1.");
-            Console.WriteLine("1.	Write a program, which creates an array of 100 Tasks, runs them and waits all of them are not finished.");
+            Console.WriteLine("1.	Write a program, which creates an array of 100 Tasks, runs them and waits all of them are finished.");
             Console.WriteLine("Each Task should iterate from 1 to 1000 and print into the console the following string:");
             Console.WriteLine("“Task #0 – {iteration number}”.");
             Console.WriteLine();
 
-            HundredTasks();
+            StartHundredTasksBySignal();
+            StartHundredTasksInParallel();
 
             Console.ReadLine();
         }
 
-        static void HundredTasks()
+        private static ManualResetEvent mre = new ManualResetEvent(false);
+
+        static void StartHundredTasksBySignal()
         {
-            // Create an array to hold the tasks
             Task[] tasks = new Task[TaskAmount];
 
-            // Initialize and start each task
             for (int i = 0; i < TaskAmount; i++)
             {
-                int taskNumber = i; // Capture the task number
+                int taskNumber = i;
                 tasks[i] = Task.Run(() =>
+                {
+                    mre.WaitOne();
+                    for (int j = 1; j <= MaxIterationsCount; j++)
+                    {
+                        Output(taskNumber, j);
+                    }
+                });
+            }
+
+            mre.Set();
+
+            Task.WaitAll(tasks);
+        }
+
+        static void StartHundredTasksInParallel()
+        {
+            Task[] tasks = new Task[TaskAmount];
+
+            for (int i = 0; i < TaskAmount; i++)
+            {
+                int taskNumber = i;
+                tasks[i] = new Task(() =>
                 {
                     for (int j = 1; j <= MaxIterationsCount; j++)
                     {
@@ -43,7 +69,8 @@ namespace MultiThreading.Task1._100Tasks
                 });
             }
 
-            // Wait for all tasks to complete
+            tasks.AsParallel().ForAll(t => t.Start());
+
             Task.WaitAll(tasks);
         }
 
