@@ -7,6 +7,7 @@
  */
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MultiThreading.Task2.Chaining
@@ -29,44 +30,45 @@ namespace MultiThreading.Task2.Chaining
             Console.ReadLine();
         }
 
-        static async void ExecuteTaskChain()
+        private static ThreadLocal<Random> threadLocalRandom = new ThreadLocal<Random>(() => new Random());
+
+        static void ExecuteTaskChain()
         {
+
             // First Task: Create an array of 10 random integers
-            var random = new Random();
-            int[] randomArray = await Task.Run(() =>
+            Task<int[]> firstTask = Task.Run(() =>
             {
                 int[] array = new int[10];
                 for (int i = 0; i < array.Length; i++)
                 {
-                    array[i] = random.Next(1, 101);
+                    array[i] = threadLocalRandom.Value.Next(1, 101);
                 }
                 Console.WriteLine("First Task - Random Array: " + string.Join(", ", array));
                 return array;
             });
 
             // Second Task: Multiply this array with another random integer
-            int multiplier = random.Next(1, 11);
-            int[] multipliedArray = await Task.Run(() =>
+            Task<int[]> secondTask = firstTask.ContinueWith(t =>
             {
-                int[] result = randomArray.Select(x => x * multiplier).ToArray();
+                int multiplier = threadLocalRandom.Value.Next(1, 11);
+                int[] result = t.Result.Select(x => x * multiplier).ToArray();
                 Console.WriteLine($"Second Task - Multiplied by {multiplier}: " + string.Join(", ", result));
                 return result;
             });
 
             // Third Task: Sort this array by ascending
-            int[] sortedArray = await Task.Run(() =>
+            Task<int[]> thirdTask = secondTask.ContinueWith(t =>
             {
-                int[] sorted = multipliedArray.OrderBy(x => x).ToArray();
+                int[] sorted = t.Result.OrderBy(x => x).ToArray();
                 Console.WriteLine("Third Task - Sorted Array: " + string.Join(", ", sorted));
                 return sorted;
             });
 
             // Fourth Task: Calculate the average value
-            double average = await Task.Run(() =>
+            thirdTask.ContinueWith(t =>
             {
-                double avg = sortedArray.Average();
+                double avg = t.Result.Average();
                 Console.WriteLine($"Fourth Task - Average Value: {avg}");
-                return avg;
             });
         }
     }
