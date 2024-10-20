@@ -18,7 +18,7 @@ namespace MultiThreading.Task4.Threads.Join
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("4.	Write a program which recursively creates 10 threads.");
+            Console.WriteLine("4. Write a program which recursively creates 10 threads.");
             Console.WriteLine("Each thread should be with the same body and receive a state with integer number, decrement it, print and pass as a state into the newly created thread.");
             Console.WriteLine("Implement all of the following options:");
             Console.WriteLine();
@@ -29,45 +29,58 @@ namespace MultiThreading.Task4.Threads.Join
 
             // Part A
             Console.WriteLine("Starting Part A: Thread class with Join");
-            CreateThreads(10, 10);
+            CreateThread(10);
 
             // Part B
             Console.WriteLine("\nStarting Part B: ThreadPool class with Semaphore");
-            CreateThreadsWithThreadPool(10, 10);
+            CreateThreadsWithThreadPool(10);
 
             Console.ReadLine();
         }
 
         // Part A: Using Thread class
-        static void CreateThreads(int maxThreads, int state)
+        static void CreateThread(object state)
         {
-            if (maxThreads <= 0) return;
+            int number = (int)state;
+            if (number <= 0) return;
+            Console.WriteLine($"Thread {number} started.");
+            Thread thread = new Thread(new ParameterizedThreadStart(CreateThread));
+            thread.Start(number - 1);
+            thread.Join();
 
-            Thread thread = new Thread(() =>
-            {
-                Console.WriteLine($"Thread with state: {state}");
-                CreateThreads(maxThreads - 1, state - 1);
-            });
-
-            thread.Start();
-            thread.Join(); // Wait for the thread to finish
+            Console.WriteLine($"Thread {number} finished.");
         }
 
         // Part B: Using ThreadPool and Semaphore
-        static Semaphore semaphore = new Semaphore(0, 10);
-
-        static void CreateThreadsWithThreadPool(int maxThreads, int state)
+        static void CreateThreadsWithThreadPool(int number)
         {
-            if (maxThreads <= 0) return;
+            ThreadWithState tws = new ThreadWithState(10);
+            ThreadPool.QueueUserWorkItem(tws.ThreadProc);
+            Console.ReadLine();
+        }
+    }
 
-            ThreadPool.QueueUserWorkItem(_ =>
-            {
-                Console.WriteLine($"ThreadPool thread with state: {state}");
-                CreateThreadsWithThreadPool(maxThreads - 1, state - 1);
-                semaphore.Release();
-            });
+    public class ThreadWithState
+    {
+        static Semaphore semaphore = new Semaphore(1, 1);
+        private int number;
 
+        public ThreadWithState(int number)
+        {
+            this.number = number;
+        }
+
+        public void ThreadProc(object state)
+        {
             semaphore.WaitOne();
+            Console.WriteLine($"Thread {number} started.");
+            if (number > 1)
+            {
+                ThreadWithState newTws = new ThreadWithState(number - 1);
+                ThreadPool.QueueUserWorkItem(newTws.ThreadProc);
+            }
+            Console.WriteLine($"Thread {number} finished.");
+            semaphore.Release();
         }
     }
 }
