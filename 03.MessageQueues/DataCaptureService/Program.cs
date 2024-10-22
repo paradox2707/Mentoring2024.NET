@@ -1,4 +1,5 @@
 ﻿using RabbitMQ.Client;
+using System.Configuration;
 
 namespace DataCaptureService
 {
@@ -18,7 +19,7 @@ namespace DataCaptureService
                                  autoDelete: false,
                                  arguments: null);
 
-            string folderPath = @"C:\DATA\.NET Mentoring Program Intermediate [UA Q4 2024]\Mentoring2024.NET - Repo\03.MessageQueues\SourceFolderForFiles"; // Change to your folder path
+            string folderPath = ConfigurationManager.AppSettings["SourceFolderPath"];
 
             Console.WriteLine("Monitoring folder for new PDF files...");
 
